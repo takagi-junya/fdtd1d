@@ -1,4 +1,4 @@
-subroutine current2()
+subroutine currentEOM()
     use constants
     use omp_lib
     implicit none
