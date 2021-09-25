@@ -3,5 +3,4 @@
 *.out
 *.inp
 *.mod
-Makefile
 fdtd
