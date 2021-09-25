@@ -1,4 +1,7 @@
-subroutine drude5()
+!------------------------------------------------------
+!   Equation of motion for drude plasma model
+!------------------------------------------------------
+subroutine EOM()
     use constants 
     implicit none
     integer ::i,j
@@ -29,19 +32,16 @@ subroutine drude5()
     omata = matmul(omata,omatb)
     omatb = omatc
     do i=ic-prad,ic+prad-1
-        !avx(i)  = (2.0d0-nu*dt)/(2.0d0+nu*dt)
         avx(i) = 1.0d0
         ajex(i) = -(2.0d0*qe/mel*dt)/(2.0d0+nu*dt)
     enddo
 
     do i=ic-prad,ic+prad
-        !avy(i)  = (2.0d0-nu*dt)/(2.0d0+nu*dt)
         avy(i) = 1.0d0
         ajey(i) = -(2.0d0*qe/mel*dt)/(2.0d0+nu*dt)
     enddo
 
     do i=ic-prad,ic+prad
-        !avz(i)  = (2.0d0-nu*dt)/(2.0d0+nu*dt)
         avz(i) = 1.0d0
         ajez(i) = -(2.0d0*qe/mel*dt)/(2.0d0+nu*dt)
         nd(i) = mel*eps0*(wp**2.0d0)/(qe**2.0d0)
@@ -54,7 +54,6 @@ subroutine drude5()
         implicit none 
         integer :: i,j
         real(kind=8),intent(in) :: x(3,3),y(3,3)
-        !real(kind=8) :: !add_mat(3,3)
         real(kind=8) :: ans(3,3)
         
         do i=1,3

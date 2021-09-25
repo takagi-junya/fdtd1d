@@ -1,4 +1,7 @@
-subroutine drude4()
+!------------------------------------------------
+!   J-E convolution method for drude plasma model
+!------------------------------------------------
+subroutine JEC()
     use constants 
     implicit none
     integer ::i
