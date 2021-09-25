@@ -1,4 +1,7 @@
-module tfsf_pulse2
+!---------------------------------------------------------------------------
+!       set total-scattered field incident wave is derived gaussian gaussian
+!---------------------------------------------------------------------------
+module tfsf_dgaussian
     use constants
     implicit none
     real(kind=8) :: dd,zbk
@@ -20,7 +23,7 @@ module tfsf_pulse2
     integer :: ibd0,jbd0
     integer :: ibd1,jbd1
     contains
-    subroutine init_ts_pulse2()
+    subroutine init_ts_dgaussian()
         use constants
         implicit none
         alpha = 16.0d0/tau0/tau0
@@ -80,7 +83,7 @@ module tfsf_pulse2
         write(30,*)"dis:",dis/dx
     end subroutine
 
-    subroutine e_add_pulse2()
+    subroutine e_add_dgaussian()
         use constants
         implicit none
         integer :: i,j
@@ -89,9 +92,9 @@ module tfsf_pulse2
         !$omp parallel do
         do i=ibd0,ibd1-1
             j = jbd0
-            ex(i,j) = ex(i,j) - bexy(i,j)*hzinc_pulse2(i,j-1)
+            ex(i,j) = ex(i,j) - bexy(i,j)*hzinc_dgaussian(i,j-1)
             j = jbd1
-            ex(i,j) = ex(i,j) + bexy(i,j)*hzinc_pulse2(i,j)
+            ex(i,j) = ex(i,j) + bexy(i,j)*hzinc_dgaussian(i,j)
         enddo
         !$omp end parallel do
 
@@ -99,9 +102,9 @@ module tfsf_pulse2
         !$omp parallel do
         do j=jbd0,jbd1-1
             i = ibd0
-            ey(i,j) = ey(i,j) + beyx(i,j)*hzinc_pulse2(i-1,j)
+            ey(i,j) = ey(i,j) + beyx(i,j)*hzinc_dgaussian(i-1,j)
             i = ibd1
-            ey(i,j) = ey(i,j) - beyx(i,j)*hzinc_pulse2(i,j)
+            ey(i,j) = ey(i,j) - beyx(i,j)*hzinc_dgaussian(i,j)
         enddo
         !$omp end parallel do
 
@@ -109,24 +112,24 @@ module tfsf_pulse2
         !$omp parallel do
         do j=jbd0,jbd1
             i = ibd0
-            ez(i,j) = ez(i,j) - bezx(i,j)*hyinc_pulse2(i-1,j)
+            ez(i,j) = ez(i,j) - bezx(i,j)*hyinc_dgaussian(i-1,j)
             i = ibd1
-            ez(i,j) = ez(i,j) + bezx(i,j)*hyinc_pulse2(i,j)
+            ez(i,j) = ez(i,j) + bezx(i,j)*hyinc_dgaussian(i,j)
         enddo
         !$omp end parallel do
 
         !$omp parallel do
         do i=ibd0,ibd1
             j = jbd0
-            ez(i,j) = ez(i,j) + bezy(i,j)*hxinc_pulse2(i,j-1)
+            ez(i,j) = ez(i,j) + bezy(i,j)*hxinc_dgaussian(i,j-1)
             j = jbd1
-            ez(i,j) = ez(i,j) - bezy(i,j)*hxinc_pulse2(i,j)
+            ez(i,j) = ez(i,j) - bezy(i,j)*hxinc_dgaussian(i,j)
         enddo
         !$omp end parallel do
 
     end subroutine
 
-    subroutine h_add_pulse2()
+    subroutine h_add_dgaussian()
         use constants
         implicit none
         integer :: i,j
@@ -135,9 +138,9 @@ module tfsf_pulse2
         !$omp parallel do
         do i=ibd0,ibd1
             j = jbd0-1
-            hx(i,j) = hx(i,j) + bmxy(i,j)*ezinc_pulse2(i,j+1)
+            hx(i,j) = hx(i,j) + bmxy(i,j)*ezinc_dgaussian(i,j+1)
             j = jbd1
-            hx(i,j) = hx(i,j) - bmxy(i,j)*ezinc_pulse2(i,j)
+            hx(i,j) = hx(i,j) - bmxy(i,j)*ezinc_dgaussian(i,j)
         enddo
         !$omp end parallel do
 
@@ -145,9 +148,9 @@ module tfsf_pulse2
         !$omp parallel do
         do j=jbd0,jbd1
             i = ibd0-1
-            hy(i,j) = hy(i,j) - bmyx(i,j)*ezinc_pulse2(i+1,j)
+            hy(i,j) = hy(i,j) - bmyx(i,j)*ezinc_dgaussian(i+1,j)
             i = ibd1
-            hy(i,j) = hy(i,j) + bmyx(i,j)*ezinc_pulse2(i,j)
+            hy(i,j) = hy(i,j) + bmyx(i,j)*ezinc_dgaussian(i,j)
         enddo
         !$omp end parallel do
 
@@ -155,113 +158,113 @@ module tfsf_pulse2
         !$omp parallel do
         do i=ibd0,ibd1-1
             j = jbd0-1
-            hz(i,j) = hz(i,j) - bmzy(i,j)*exinc_pulse2(i,j+1)
+            hz(i,j) = hz(i,j) - bmzy(i,j)*exinc_dgaussian(i,j+1)
             j = jbd1
-            hz(i,j) = hz(i,j) + bmzy(i,j)*exinc_pulse2(i,j)
+            hz(i,j) = hz(i,j) + bmzy(i,j)*exinc_dgaussian(i,j)
         enddo
         !$omp end parallel do
 
         !$omp parallel do
         do j=jbd0,jbd1-1
             i = ibd0-1
-            hz(i,j) = hz(i,j) + bmzx(i,j)*eyinc_pulse2(i+1,j)
+            hz(i,j) = hz(i,j) + bmzx(i,j)*eyinc_dgaussian(i+1,j)
             i = ibd1
-            hz(i,j) = hz(i,j) - bmzx(i,j)*eyinc_pulse2(i,j)
+            hz(i,j) = hz(i,j) - bmzx(i,j)*eyinc_dgaussian(i,j)
         enddo
         !$omp end parallel do
 
     end subroutine
 
-    real(kind=8) function exinc_pulse2(i,j)
+    real(kind=8) function exinc_dgaussian(i,j)
         use constants
         implicit none
         integer,intent(in) :: i,j
         real(kind=8) :: x,y,eth,eph
         x = (i+0.5d0)*dx
         y = j*dy
-        eth = cogam*einc_pulse2(x,y)
-        eph = sigam*einc_pulse2(x,y)
-        exinc_pulse2 = vxthe*eth+vxphi*eph
+        eth = cogam*einc_dgaussian(x,y)
+        eph = sigam*einc_dgaussian(x,y)
+        exinc_dgaussian = vxthe*eth+vxphi*eph
     end function
 
-    real(kind=8) function eyinc_pulse2(i,j)
+    real(kind=8) function eyinc_dgaussian(i,j)
         use constants
         implicit none
         integer,intent(in) :: i,j
         real(kind=8) :: x,y,eth,eph
         x = i*dx
         y = (j+0.5d0)*dy
-        eth = cogam*einc_pulse2(x,y)
-        eph = sigam*einc_pulse2(x,y)
-        eyinc_pulse2 =vythe*eth+vyphi*eph
+        eth = cogam*einc_dgaussian(x,y)
+        eph = sigam*einc_dgaussian(x,y)
+        eyinc_dgaussian =vythe*eth+vyphi*eph
     end function
 
-    real(kind=8) function ezinc_pulse2(i,j)
+    real(kind=8) function ezinc_dgaussian(i,j)
         use constants
         implicit none
         integer,intent(in) :: i,j
         real(kind=8) :: x,y,eth
         x = i*dx
         y = j*dy
-        eth = cogam*einc_pulse2(x,y)
-        ezinc_pulse2 = vzthe*eth
+        eth = cogam*einc_dgaussian(x,y)
+        ezinc_dgaussian = vzthe*eth
     end function
 
-    real(kind=8) function hxinc_pulse2(i,j)
+    real(kind=8) function hxinc_dgaussian(i,j)
         use constants
         implicit none
         integer,intent(in) :: i,j
         real(kind=8) :: x,y,eth,eph
         x = i*dx
         y = (j+0.5d0)*dy
-        eth = cogam*hinc_pulse2(x,y)
-        eph = sigam*hinc_pulse2(x,y)
-        hxinc_pulse2 = uxthe*eth+uxphi*eph
+        eth = cogam*hinc_dgaussian(x,y)
+        eph = sigam*hinc_dgaussian(x,y)
+        hxinc_dgaussian = uxthe*eth+uxphi*eph
     end function
 
-    real(kind=8) function hyinc_pulse2(i,j)
+    real(kind=8) function hyinc_dgaussian(i,j)
         use constants
         implicit none
         integer,intent(in) :: i,j
         real(kind=8) :: x,y,eth,eph
         x = (i+0.5d0)*dx
         y = j*dy
-        eth = cogam*hinc_pulse2(x,y)
-        eph = sigam*hinc_pulse2(x,y)
-        hyinc_pulse2 = uythe*eth+uyphi*eph
+        eth = cogam*hinc_dgaussian(x,y)
+        eph = sigam*hinc_dgaussian(x,y)
+        hyinc_dgaussian = uythe*eth+uyphi*eph
     end function
 
-    real(kind=8) function hzinc_pulse2(i,j)
+    real(kind=8) function hzinc_dgaussian(i,j)
         use constants
         implicit none
         integer,intent(in) :: i,j
         real(kind=8) :: x,y,eph
         x = (i+0.5d0)*dx
         y = (j+0.5d0)*dy
-        eph = sigam*hinc_pulse2(x,y)
-        hzinc_pulse2 = uzphi*eph
+        eph = sigam*hinc_dgaussian(x,y)
+        hzinc_dgaussian = uzphi*eph
     end function
 
 
-    real(kind=8) function einc_pulse2(x,y)
+    real(kind=8) function einc_dgaussian(x,y)
         use constants
         implicit none
         real(kind=8) :: tau
         real(kind=8),intent(in) :: x,y
         tau = t+(r0x*x+r0y*y-dis)/vbk
-        einc_pulse2 = pulse2(tau)
+        einc_dgaussian = dgaussian(tau)
     end function
 
-    real(kind=8) function hinc_pulse2(x,y)
+    real(kind=8) function hinc_dgaussian(x,y)
         use constants
         implicit none
         real(kind=8) :: tau
         real(kind=8),intent(in) :: x,y
         tau = t+(r0x*x+r0y*y-dis)/vbk
-        hinc_pulse2 = pulse2(tau)
+        hinc_dgaussian = dgaussian(tau)
     end function
 
-    real(kind=8) function pulse2(tau)
+    real(kind=8) function dgaussian(tau)
         use constants
         implicit none
         real(kind=8) :: tt,tt2
@@ -270,8 +273,8 @@ module tfsf_pulse2
         tt2 = tt*tt
         !tt2 = tau-2.0d0*tau0
         !tt2 = tt2*tt2
-        !pulse2 = -amp*exp(-tt*alpha)+amp*exp(-tt2*alpha)
-        pulse2 = amp*(-tt/tau0)*exp(-tt2*alpha)
-    end function pulse2
+        !dgaussian = -amp*exp(-tt*alpha)+amp*exp(-tt2*alpha)
+        dgaussian = amp*(-tt/tau0)*exp(-tt2*alpha)
+    end function dgaussian
 
 end module

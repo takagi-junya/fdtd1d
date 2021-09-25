@@ -36,7 +36,7 @@ program fdtd2d
             call epml()
             t=t+0.5d0*dt
             call velocity()
-            call current2()
+            call currentEOM()
             call hfield()
             call hpml()
             t=t+0.5d0*dt

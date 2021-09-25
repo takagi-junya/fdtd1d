@@ -1,4 +1,7 @@
-subroutine drude3()
+!----------------------------------------------------------------
+!   Auxilialy Differential Equation method for drude plasma model 
+!----------------------------------------------------------------
+subroutine ADE()
     use constants 
     implicit none
     integer ::i

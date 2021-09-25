@@ -176,14 +176,14 @@ subroutine setup()
     endif
 
     if(pls.eq.1) then
-        call drude3()
-        write(30,*)"drude3"
+        call ADE()
+        write(30,*)"ADE"
     elseif(pls.eq.2) then
-        call drude4()
-        write(30,*)"drude4"
+        call JEC()
+        write(30,*)"JEC"
     elseif(pls.eq.3) then
-        call drude5()
-        write(30,*)"drude5"
+        call EOM()
+        write(30,*)"EOM"
     endif
 
 end subroutine setup
