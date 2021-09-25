@@ -1,42 +1,46 @@
+!------------------------------------------------------
+!     constants and arrays 
+!     auther takagi junya
+!------------------------------------------------------
 module constants
    use HDF5              
     
    !/space/
-   integer :: nxx,nyy              !計算領域セル数
-   real(kind=8) :: dx,dy                   !グリッド幅
-   integer :: abc
-   integer :: pbc(3),lpml(3) !吸収境界セル数
+   integer :: nxx,nyy              !number of cells
+   real(kind=8) :: dx,dy           !grid length
+   integer :: abc                  !absorption boundry flag
+   integer :: pbc(3)               !periodic boundry flag
+   integer :: lpml(3)              !number of absorption boundry cells
 
    !/time/
    real(kind=8) :: t
    real(kind=8) :: dt
-   real(kind=8) :: deltat                      !CFL係数
-   integer :: step,nstep                     !総step数
+   real(kind=8) :: deltat          !CFL coefficient
+   integer :: step,nstep           !number of time steps
 
    !/output/
-   integer :: out                      !出力間隔
-   integer :: outs                     
-   integer :: comp(9)                  !出力電磁場
-   integer :: io,jo  
-                  !出力ポイント
+   integer :: out                      !output interval
+   integer :: outs                     !first output time
+   integer :: comp(9)                  !output conponent
+   integer :: io(2),jo(2)              !two output points
+               
    !/scat/
-   integer :: mode                     !0:FDTD 1:TF-SF 2:遠方界計算 
-   integer ::lx,ly                     !散乱界領域セル数
-   real(kind=8) :: gamma0,theta0,phi0,amp
-   real(kind=8) :: lambda,tau0,freq,omega
-   real(kind=8) :: bf(3)
-   real(kind=8),allocatable :: omat(:,:),omata(:,:),omatb(:,:),omatc(:,:),imat(:,:)
+   integer :: mode                     
+   integer ::lx,ly                     !scatterd field cells
+   real(kind=8) :: gamma0,theta0,phi0,amp !pwave angles,amplitude
+   real(kind=8) :: lambda,tau0,freq,omega !wave length,time constant frequancy,angle frequancy
+   real(kind=8),allocatable :: omat(:,:),omata(:,:),omatb(:,:),omatc(:,:),imat(:,:) !matrix for EOM
 
    !/far/
    integer :: isx,isy
    real(kind=8) :: theta1,phi1
    
    !/object/
-   integer :: obj                      !1:円柱 2:プリズム
-   integer :: med                      !1:誘電体2:完全導体  
-   integer :: ic,jc                    !散乱体の中心  
-   integer :: lx2,ly2                  !プリズムの辺の長さ   
-   real(kind=8) :: epsr,radius                 !比誘電率,半径   
+   integer :: obj                      !1:cylinder 2:prism
+   integer :: med                      !1:dielectric 2:PEC 
+   integer :: ic,jc                    !center of simulation filed
+   integer :: lx2,ly2                  !length of prism edge
+   real(kind=8) :: epsr,radius         !relative permittivity cylinder's radius
    
    !/feed/
    integer :: ip,jp,kp
@@ -45,9 +49,9 @@ module constants
    !/wave/
    integer :: kwave
    real(kind=8) :: tau
-   real(kind=8) :: amps(6)
-   real(kind=8) :: orgs(3)
-   real(kind=8) :: ang(3)              
+   real(kind=8) :: amps(6)       !pwave angle
+   real(kind=8) :: orgs(3)    
+   real(kind=8) :: ang(3)        !pwave angle      
    real(kind=8) :: pc,pt,pw
    real(kind=8) :: alpha
 
@@ -62,7 +66,6 @@ module constants
    integer,parameter :: order=4
    real(kind=8),parameter :: rmax=-120.0d0
 
-   !全空間セル数
    integer :: nx,ny
    
    real(kind=8),parameter::epsbk=1.0d0,mubk=1.0d0,sigebk=0.0d0,sigmbk=0.0d0
@@ -71,11 +74,11 @@ module constants
    integer :: h5count
 
     
-   real(kind=8),parameter::eps0=8.854188d-12,mu0=1.256637d-6 !真空の誘電玁E��E��磁率
-   real(kind=8),parameter::qe=1.602176462d-19,mel = 9.10938188d-31
-   real(kind=8),parameter::c=2.9979246d8,z0=376.73031d0      !光速、インピ�Eダンス
-   real(kind=8),parameter::radi0=1.74532925d-2               !角度のラジアン変換
-   real(kind=8),parameter::pai=3.14159265d0                  !冁E��玁E   
+   real(kind=8),parameter::eps0=8.854188d-12,mu0=1.256637d-6 !permitivity and permeability of vacuum
+   real(kind=8),parameter::qe=1.602176462d-19,mel = 9.10938188d-31 !quantity of charge,mass
+   real(kind=8),parameter::c=2.9979246d8,z0=376.73031d0      !speed of light ,impedance
+   real(kind=8),parameter::radi0=1.74532925d-2              
+   real(kind=8),parameter::pai=3.14159265d0                     
 
    real(kind=8),allocatable :: ex(:),ey(:),ez(:)
    real(kind=8),allocatable :: pex(:),pey(:),pez(:)

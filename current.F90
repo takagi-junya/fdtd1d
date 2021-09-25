@@ -1,3 +1,6 @@
+!------------------------------------------------------
+!   calclate current density caused by plasma
+!------------------------------------------------------
 subroutine current()
     use constants
     use omp_lib
