@@ -12,7 +12,7 @@ MPIDIR = ./
 
 LINKER		= $(FC)
 
-MODS 	= constants.o  hdfio.o pwave.o pml2d.o 
+MODS 	= constants.o  hdfio.o pwave.o LCP.o RCP.o pml2d.o 
 
 FOBJS	= fdtd1d.o func.o  ADE.o JEC.o EOM.o velocity.o setup.o efield.o efield_plrc.o hfield.o current.o  currentEOM.o phi.o out_emf.o
 

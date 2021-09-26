@@ -53,7 +53,7 @@ module constants
    real(kind=8) :: orgs(3)    
    real(kind=8) :: ang(3)        !pwave angle      
    real(kind=8) :: pc,pt,pw
-   real(kind=8) :: alpha
+   real(kind=8) :: alpha,k0
 
    !/plasma
    integer :: pls
