@@ -79,6 +79,7 @@ subroutine setup()
     dt=deltat/(c*sqrt(1.0d0/(dx*dx)+1.0d0/(dy*dy)))
     freq = c/(lambda*dx)
     omega = 2*pai*freq
+    k0 = omega/c
     jx = 0.0d0
     jy = 0.0d0
     jz = 0.0d0
