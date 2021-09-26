@@ -1,3 +1,6 @@
+!-----------------------------------------
+! 　　set right-circular-polarized wave
+!-----------------------------------------
 module RCP
     implicit none
     real :: orge(3),orgb(3)
