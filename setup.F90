@@ -9,22 +9,16 @@ subroutine setup()
     integer :: i,k
     real(kind=8) :: omg,ti,f
 
-    namelist /space/nxx,nyy,dx,dy,abc,pbc,lpml
+    namelist /space/nxx,dx,abc,lpml
     namelist /time/deltat,nstep
-    namelist /output/out,outs,comp,io,jo
-    namelist /scatt/mode,lx,ly,gamma0,theta0,phi0,amp,lambda,tau0
-    namelist /far/isx,isy,theta1,phi1
-    namelist /object/obj,med,ic,jc,lx2,ly2,epsr,radius
-    namelist /wave/kwave,amps,orgs,ang,pt,pw
-    namelist /plasma/pls,prad,nu,wp,wc
+    namelist /output/interval,ostart,component,io
+    namelist /wave/mode,amps,lambda,orgs,pt,pw
+    namelist /plasma/pls,width,nu,wp,wc
         
     open(10,file="param.inp",action="read")
     read(10,nml=space)
     read(10,nml=time)
     read(10,nml=output)
-    read(10,nml=scatt)
-    read(10,nml=far)
-    read(10,nml=object)
     read(10,nml=wave)    
     read(10,nml=plasma)
     close(10)
@@ -32,33 +26,35 @@ subroutine setup()
     !吸収境界
     if(abc==0) then
         nx = nxx
-        ny = nyy
     else
         nx = nxx+2*lpml(1)
-        ny = nyy+2*lpml(2)
     endif
     ic = int(0.5*nx)
-    jc = int(0.5*ny)
-    jo = jc
-    write(30,*)"nx:",nx,"ny:",ny
-    write(30,'(a3,I4.4,a3,I4.4)')"ic:",ic,"jc:"c
 
-    allocate(ex(0:nx),ey(0:nx),ez(0:nx))
-    allocate(hx(0:nx),hy(0:nx),hz(0:nx))
-    allocate(jx(0:nx),jy(0:nx),jz(0:nx))
-    allocate(vx(0:nx),vy(0:nx),vz(0:nx),nd(0:nx))
-    allocate(aex(0:nx),aey(0:nx),aez(0:nx))
-    allocate(bexy(0:nx),beyx(0:nx))
-    allocate(bezx(0:nx),bezy(0:nx))
-    allocate(amx(0:nx),amy(0:nx),amz(0:nx))
-    allocate(bmxy(0:nx),bmyx(0:nx))
-    allocate(bmzx(0:nx),bmzy(0:nx))
-    allocate(avx(0:nx),avy(0:nx),avz(0:nx))
-    allocate(epsd(-1:nx),sgmed(-1:nx))
-    allocate(mud(-1:nx),sgmmd(-1:nx))
-    allocate(ajx(0:nx),ajy(0:nx),ajz(0:nx))
-    allocate(ajex(0:nx),ajey(0:nx),ajez(0:nx))
-    
+    istart = int(nx/nprocs)*myrank+1 
+    iend   = int(nx/nprocs)*(myrank+1)
+
+    dimsf1d(1) = nx 
+    dimsfi1d(1)= nx 
+    dcount = iend-istart+1 
+    chunk_dims1d(1) = dcount 
+
+    allocate(ex(istart-1:iend+1),ey(istart-1:iend+1),ez(istart-1:iend+1))
+    allocate(hx(istart-1:iend+1),hy(istart-1:iend+1),hz(istart-1:iend+1))
+    allocate(jx(istart-1:iend+1),jy(istart-1:iend+1),jz(istart-1:iend+1))
+    allocate(vx(istart-1:iend+1),vy(istart-1:iend+1),vz(istart-1:iend+1),nd(istart-1:iend+1))
+    allocate(aex(istart-1:iend+1),aey(istart-1:iend+1),aez(istart-1:iend+1))
+    allocate(bexy(istart-1:iend+1),beyx(istart-1:iend+1))
+    allocate(bezx(istart-1:iend+1),bezy(istart-1:iend+1))
+    allocate(amx(istart-1:iend+1),amy(istart-1:iend+1),amz(istart-1:iend+1))
+    allocate(bmxy(istart-1:iend+1),bmyx(istart-1:iend+1))
+    allocate(bmzx(istart-1:iend+1),bmzy(istart-1:iend+1))
+    allocate(avx(istart-1:iend+1),avy(istart-1:iend+1),avz(istart-1:iend+1))
+    allocate(epsd(istart-1:iend+1),sgmed(istart-1:iend+1))
+    allocate(mud(istart-1:iend+1),sgmmd(istart-1:iend+1))
+    allocate(ajx(istart-1:iend+1),ajy(istart-1:iend+1),ajz(istart-1:iend+1))
+    allocate(ajex(istart-1:iend+1),ajey(istart-1:iend+1),ajez(istart-1:iend+1))
+    allocate(omat(3,3),sa(3,3),sb(3,3),tc(3,3),sab(3,3),imat(3,3))
 
     filename(1:6)=(/"ex.h5","ey.h5","ez.h5","hx.h5","hy.h5","hz.h5"/)
     filename(7:10)=(/"wphi.h5","wz.h5","uphi.h5","uz.h5"/)
@@ -76,7 +72,7 @@ subroutine setup()
     datasetname(1:6)=(/"wphi","wz","uphi","uz","dphi","dz"/)
     datasetname(7:9)=(/"dphi","dz","D"/)
 
-    dt=deltat/(c*sqrt(1.0d0/(dx*dx)+1.0d0/(dy*dy)))
+    dt=deltat/(c*sqrt(1.0d0/(dx*dx)))
     freq = c/(lambda*dx)
     omega = 2*pai*freq
     k0 = omega/c
@@ -84,34 +80,38 @@ subroutine setup()
     jy = 0.0d0
     jz = 0.0d0
 
-    if(kwave==0) then
-        pc = orgs(1)*dx
-        pw = pw*dx
-    endif
+    pc = orgs(1)*dx
+    pw = pw*dx
 
-    if(mode==1.or.mode==2.or.mode==3) then
-        write(30,*)"frequency:",freq 
-        write(30,*)"T:",1/freq
-        write(30,*)"ka:",2*pai*(radius*dx)/(lambda*dx)
-    endif
-
-    write(30,*)"dt:",dt,"dx:",dx,"dy:",dy
-    
     !背景媒質
-    do i=-1,nx
+    do i=istart,iend
         epsd(i)=epsbk
         mud(i)=mubk
         sgmed(i)=sigebk
         sgmmd(i)=sigmbk
     end do
     
+    left = myrank-1
+    if(myrank.eq.0) then
+        left = mpi_proc_null 
+    endif
+    right = myrank+1
+    if(myrank.eq.nprocs-1) then
+        right = mpi_proc_null 
+    endif
+
     !係数の計算
-    do i=0,nx
+    call exchg1d(epsd,istart,iend,comm,left,right)
+    call exchg1d(sgmed,istart,iend,comm,left,right)
+    call exchg1d(mud,istart,iend,comm,left,right)
+    call exchg1d(sgmmd,istart,iend,comm,left,right)
+
+    !係数の計算
+    do i=istart,iend
         epsx = 0.5d0*(epsd(i)+epsd(i))*eps0
         sgex = 0.5d0*(sgmed(i)+sgmed(i))
         a = 0.5d0*sgex*dt/epsx
         aex(i) = (1.0d0-a)/(1.0d0+a)
-        bexy(i)= dt/epsx/(1.0d0+a)/dy
 
         epsy = 0.5d0*(epsd(i)+epsd(i-1))*eps0
         sgey = 0.5d0*(sgmed(i)+sgmed(i-1))
@@ -124,13 +124,11 @@ subroutine setup()
         a = 0.5d0*sgez*dt/epsz
         aez(i) = (1.0d0-a)/(1.0d0+a)
         bezx(i) = dt/epsz/(1.0d0+a)/dx 
-        bezy(i) = dt/epsz/(1.0d0+a)/dy
         
         mux = 0.5d0*(mud(i)+mud(i-1))*mu0
         sgmx= 0.5d0*(sgmmd(i)+sgmmd(i-1))
         a = 0.5d0*sgmx*dt/mux
         amx(i) = (1.0d0-a)/(1.0d0+a)
-        bmxy(i)= dt/mux/(1.0d0+a)/dy
 
         muy = 0.5d0*(mud(i)+mud(i))*mu0
         sgmy= 0.5d0*(sgmmd(i)+sgmmd(i))
@@ -143,48 +141,50 @@ subroutine setup()
         a = 0.5d0*sgmz*dt/muz
         amz(i) = (1.0d0-a)/(1.0d0+a)
         bmzx(i) = dt/muz/(1.0d0+a)/dx
-        bmzy(i) = dt/muz/(1.0d0+a)/dy
     enddo
 
-    if(mode.eq.10) then
-        write(30,*)"PLRC"
-        allocate(phix(0:nx),phiy(0:nx),phiz(0:nx))
-        allocate(aphix(0:nx),aphiy(0:nx),aphiz(0:nx))
-        allocate(pex(0:nx),pey(0:nx),pez(0:nx))
+    ipls = 0 
+    iple = 0 
 
-        xhi0 = wp**2.0d0/nu*(dt-(1.0d0-exp(-nu*dt)/nu))
-        xi0 = wp**2.0d0/nu*(dt**2.0d0/2.0d0+(dt+1.0d0/nu)*exp(-nu*dt)/nu-1.0d0/nu/nu)
+    if(istart.ge.ic-width.and.iend.le.ic+width) then
+        ipls = istart
+        iple = iend
+    endif
 
-        dxhi0 = -(wp/nu)**2.0d0*((exp(-nu*dt)-1.0d0)**2.0d0)
-        dxi0 = (wp/nu)**2.0d0*(((dt+1.0d0/nu)*exp(-nu*dt)-1.0d0/nu)*(1.0d0-exp(-nu*dt)))
-        do i=ic-prad,ic+prad+1
-            aex(i) = (1.0d0-xi0)/(1.0d0+xhi0-xi0)
-            bexy(i)= dt/eps0/(1.0d0+xhi0-xi0)/dy
-            aphix(i) = 1.0d0/(1.0d0+xhi0-xi0)
-        enddo
+    if(istart.le.ic-width.and.iend.le.ic+width) then
+        ipls = ic-width 
+        iple = iend 
+    endif
+    
+    if(istart.le.ic-width.and.iend.ge.ic+width) then
+        ipls = ic-width 
+        iple = ic+width 
+    endif
 
-        do i=ic-prad,ic+prad
-            aey(i) = (1.0d0-xi0)/(1.0d0+xhi0-xi0)
-            beyx(i)= dt/eps0/(1.0d0+xhi0-xi0)/dx
-            aphiy(i) = 1.0d0/(1.0d0+xhi0-xi0)
-        
-            aez(i) = (1.0d0-xi0)/(1.0d0+xhi0-xi0)
-            bezx(i) = dt/eps0/(1.0d0+xhi0-xi0)/dx 
-            bezy(i) = dt/eps0/(1.0d0+xhi0-xi0)/dy
-            aphiz(i) = 1.0d0/(1.0d0+xhi0-xi0)
-        enddo
-        
+    if(istart.ge.ic-width.and.iend.ge.ic+width) then
+        ipls = istart 
+        iple = ic+width 
     endif
 
     if(pls.eq.1) then
         call ADE()
-        write(30,*)"ADE"
     elseif(pls.eq.2) then
         call JEC()
-        write(30,*)"JEC"
     elseif(pls.eq.3) then
         call EOM()
-        write(30,*)"EOM"
     endif
 
+    if(myrank.eq.0) then
+        open(30,file="sim.out")
+        write(30,*)"nx:",nx
+        write(30,'(a4,I4.4,a3,I4.4)')"ic:",ic
+        write(30,*)"io:",io
+        write(30,*)"frequency:",freq 
+        write(30,*)"T:",1/freq
+        write(30,*)"dt:",dt,"dx:",dx
+    endif
+    
+    if(myrank.eq.nprocs-1) then 
+        iend = nx-1
+    endif
 end subroutine setup

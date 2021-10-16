@@ -3,18 +3,20 @@ module hdfio
     use constants
     implicit none
     character(len=20) :: filename(20)
-    character(len=10):: groupname(20)
+    character(len=4):: groupname(20)
     character(len=10) :: datasetname(10)
     character(len=5) :: tag
     integer(HID_T) :: file_id(20)
     integer(HID_T) :: group_id(20)
     integer(HID_T) :: dataset_id(20)
     integer(HID_T) :: dataspace_id(20)
+    integer(HID_T) :: plist_id(20) 
     integer :: istat1(20),istat2(20),error(20)
     integer :: rank=2
     integer :: rank2 =1
     integer(HSIZE_T) :: dims(2)
     integer(HSIZE_T) :: dim2(1)
+    integer(HSIZE_T),dimension(1) :: dimsf1d,dimsfi1d,chunk_dims1d
 
 contains
 
@@ -55,6 +57,28 @@ contains
         endif
     end subroutine hdfopen
 
+    !並列版
+    subroutine h5popen(filename,groupname,file_id,group_id,plist_id,acc,comm,info,err)
+        use HDF5
+        implicit none 
+        integer :: hdferr
+        integer,intent(in) :: acc,comm,info
+        integer,intent(inout) :: err
+        integer(HID_T),intent(inout) :: file_id,group_id,plist_id 
+        character(len=20),intent(in) :: filename
+        character(len=4),intent(in) :: groupname 
+        call h5pcreate_f(h5p_file_access_f,plist_id,err)
+        call h5pset_fapl_mpio_f(plist_id,comm,info,err)
+        if(acc.eq.0) then
+            call h5fcreate_f(filename,h5f_acc_trunc_f,file_id,err,access_prp=plist_id)
+            call h5gcreate_f(file_id,groupname,group_id,err)
+        else if(acc.eq.1) then
+            call h5fopen_f(filename,H5F_ACC_RDWR_F,file_id,err,access_prp=plist_id)
+            call h5gopen_f(file_id,groupname,group_id,err)
+        endif
+        call h5pclose_f(plist_id,err)
+    end subroutine
+
     !HDFファイルを閉じる
     subroutine hdfclose(file_id,group_id,istate)
         use HDF5
@@ -65,6 +89,17 @@ contains
             call h5fclose_f(file_id,istate)
         return
     end subroutine hdfclose
+
+    !並列版
+    subroutine h5pclose(file_id,group_id,plist_id,istate)
+        use HDF5
+        implicit none
+        integer :: err
+        integer(HID_T),intent(inout) :: file_id,group_id,plist_id
+        integer(kind=4),intent(in) :: istate 
+        call h5gclose_f(group_id,err)
+        call h5fclose_f(file_id,err)
+    end subroutine
 
     !1次元配列の書き込み
     subroutine wrt1d(file_id,group_id,datasetname,dim,data,istat,status)
@@ -88,6 +123,52 @@ contains
 
         return
     end subroutine wrt1d
+
+    !並列版
+    subroutine wrt1p(group_id,plist_id,datasetname,dims,chunk_dims,myid,data)
+        use HDF5
+        use mpi
+        implicit none
+        integer(kind=4),parameter :: rank=1
+        integer,intent(in) :: myid
+        integer(kind=HID_T),intent(inout) :: group_id,plist_id
+        integer(kind=HSIZE_T),intent(in) :: dims(1),chunk_dims(1)
+        real(kind=8),intent(in) :: data(:)
+        integer(kind=HID_T) :: dataspace,dataset_id
+        character(len=*),intent(in) :: datasetname
+
+        integer :: err
+        integer(kind=4):: status
+        integer(kind=HID_T) :: filespace,dataspace_id,memspace
+        integer(HSIZE_T),dimension(1) :: stride,count,block
+        integer(HSSIZE_T),dimension(1) :: offset
+
+        call h5screate_simple_f(rank,dims,dataspace_id,status)
+        call h5screate_simple_f(rank,chunk_dims,memspace,status)
+
+        call h5pcreate_f(H5P_DATASET_CREATE_F,plist_id,status)
+        call h5pset_chunk_f(plist_id,rank,chunk_dims,status)
+        call h5dcreate_f(group_id,datasetname,H5T_NATIVE_DOUBLE,dataspace_id,dataset_id,status)
+        call h5sclose_f(dataspace_id,status)
+        
+        stride(1) = 1
+        count(1) = 1 
+        block(1) = chunk_dims(1)
+        offset(1) = myid*chunk_dims(1)
+        
+        call h5dget_space_f(dataset_id,dataspace_id,status)
+        call h5sselect_hyperslab_f(dataspace_id,H5S_SELECT_SET_F,offset,count,status,stride,block)
+
+        call h5pcreate_f(H5P_DATASET_XFER_F,plist_id,status)
+        call h5pset_dxpl_mpio_f(plist_id,H5FD_MPIO_COLLECTIVE_F,status)
+        call h5dwrite_f(dataset_id,H5T_NATIVE_DOUBLE,data,dims,status,file_space_id=dataspace_id,mem_space_id=memspace,xfer_prp=plist_id)
+
+        call h5sclose_f(dataspace_id,status)
+        call h5sclose_f(memspace,status)
+        call h5pclose_f(plist_id,status)
+        call h5dclose_f(dataset_id,status)
+        call h5sclose_f(dataspace_id,status)
+    end subroutine
 
     !2次元配列の書き込み
     subroutine wrt2d(file_id,group_id,datasetname,dim,data,istat,status)

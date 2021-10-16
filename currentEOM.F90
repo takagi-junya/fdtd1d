@@ -5,7 +5,7 @@ subroutine currentEOM()
     integer :: i
 
     !$omp parallel do
-    do i=0,nx
+    do i=istart,iend
         jx(i) = -qe*nd(i)*vx(i)
         jy(i) = -qe*nd(i)*vy(i)
         jz(i) = -qe*nd(i)*vz(i)

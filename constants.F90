@@ -1,84 +1,68 @@
-!------------------------------------------------------
-!     constants and arrays 
-!     auther takagi junya
-!------------------------------------------------------
+!--------------------------------------
+!     シミュレーションで使用する定数、配列
+!--------------------------------------
 module constants
-   use HDF5              
+   use HDF5  
+   use mpi            
     
+   
+   !全空間セル数
+   integer :: nx
+
    !/space/
-   integer :: nxx,nyy              !number of cells
-   real(kind=8) :: dx,dy           !grid length
-   integer :: abc                  !absorption boundry flag
-   integer :: pbc(3)               !periodic boundry flag
-   integer :: lpml(3)              !number of absorption boundry cells
+   integer :: nxx              !number of cells
+   real(kind=8) :: dx          !grid length
+   integer :: abc,lpml(3)      !number of cells for absoption boundry
 
    !/time/
    real(kind=8) :: t
    real(kind=8) :: dt
-   real(kind=8) :: deltat          !CFL coefficient
-   integer :: step,nstep           !number of time steps
+   real(kind=8) :: deltat                    !CFL coefficent
+   integer :: step,nstep                     !total time step
 
    !/output/
-   integer :: out                      !output interval
-   integer :: outs                     !first output time
-   integer :: comp(9)                  !output conponent
-   integer :: io(2),jo(2)              !two output points
-               
-   !/scat/
-   integer :: mode                     
-   integer ::lx,ly                     !scatterd field cells
-   real(kind=8) :: gamma0,theta0,phi0,amp !pwave angles,amplitude
-   real(kind=8) :: lambda,tau0,freq,omega !wave length,time constant frequancy,angle frequancy
-   real(kind=8),allocatable :: omat(:,:),omata(:,:),omatb(:,:),omatc(:,:),imat(:,:) !matrix for EOM
+   integer :: interval                      !output interval 
+   integer :: ostart                        !output start
+   integer :: component(9)                  !EM-field component outputed
+   integer :: io(2)
 
-   !/far/
-   integer :: isx,isy
-   real(kind=8) :: theta1,phi1
-   
    !/object/
-   integer :: obj                      !1:cylinder 2:prism
-   integer :: med                      !1:dielectric 2:PEC 
-   integer :: ic,jc                    !center of simulation filed
-   integer :: lx2,ly2                  !length of prism edge
-   real(kind=8) :: epsr,radius         !relative permittivity cylinder's radius
-   
-   !/feed/
-   integer :: ip,jp,kp
-   real(kind=8) :: duration,t0
+   integer :: ic
    
    !/wave/
-   integer :: kwave
-   real(kind=8) :: tau
-   real(kind=8) :: amps(6)       !pwave angle
-   real(kind=8) :: orgs(3)    
-   real(kind=8) :: ang(3)        !pwave angle      
-   real(kind=8) :: pc,pt,pw
-   real(kind=8) :: alpha,k0
+   integer :: mode
+   real(kind=8) :: lambda,freq,omega      !wave length,frequency
+   real(kind=8) :: amps(3)                !amplitude
+   real(kind=8) :: orgs(3)                       
+   real(kind=8) :: pc,pt,pw,k0
+   real(kind=8) :: alpha
 
    !/plasma
    integer :: pls
-   real(kind=8) :: prad,nu
-   real(kind=8) :: wp
-   real(kind=8) :: wc(3)
+   real(kind=8) :: width !plasma slab length
+   real(kind=8) :: wp,nu !plasma frequency,collision frequency
+   real(kind=8) :: wc(3) !cyclotron frequency 
+   real(kind=8),allocatable :: omat(:,:),sa(:,:),sb(:,:),tc(:,:),imat(:,:),sab(:,:)
 
-   integer ::ifed,jfed,kfed
    !PML
    integer,parameter :: order=4
    real(kind=8),parameter :: rmax=-120.0d0
 
-   integer :: nx,ny
-   
-   real(kind=8),parameter::epsbk=1.0d0,mubk=1.0d0,sigebk=0.0d0,sigmbk=0.0d0
-
    !HDF5
    integer :: h5count
 
+   !MPI
+   integer :: left,right,nprocs,myrank
+   integer :: mpierr,comm,infom,hdferr
+   integer :: istart,iend,ipls,iple,dcount
     
-   real(kind=8),parameter::eps0=8.854188d-12,mu0=1.256637d-6 !permitivity and permeability of vacuum
-   real(kind=8),parameter::qe=1.602176462d-19,mel = 9.10938188d-31 !quantity of charge,mass
-   real(kind=8),parameter::c=2.9979246d8,z0=376.73031d0      !speed of light ,impedance
-   real(kind=8),parameter::radi0=1.74532925d-2              
-   real(kind=8),parameter::pai=3.14159265d0                     
+   !physical constants
+   real(kind=8),parameter::eps0=8.854188d-12,mu0=1.256637d-6 !permitivity,permeability
+   real(kind=8),parameter::qe=1.602176462d-19,mel = 9.10938188d-31 !charge,massive
+   real(kind=8),parameter::c=2.9979246d8,z0=376.73031d0      !light speed,impedance
+   real(kind=8),parameter::epsbk=1.0d0,mubk=1.0d0,sigebk=0.0d0,sigmbk=0.0d0
+   real(kind=8),parameter::radi0=1.74532925d-2               
+   real(kind=8),parameter::pai=3.14159265d0                   
 
    real(kind=8),allocatable :: ex(:),ey(:),ez(:)
    real(kind=8),allocatable :: pex(:),pey(:),pez(:)

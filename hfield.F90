@@ -4,22 +4,22 @@ subroutine hfield()
     integer :: i
   
     !$omp parallel do
-    do i=1,nx-1
-        hx(i) = amx(i)*hx(i)-bmxy(i)*(ez(i)-ez(i))
+    do i=istart,iend
+        hx(i) = amx(i)*hx(i)
     enddo
     !$omp end parallel do
 
+    call exchg1d(ez,istart,iend,comm,left,right)
     !$omp parallel do
-    do i=0,nx-1
+    do i=istart,iend
         hy(i) = amy(i)*hy(i)+bmyx(i)*(ez(i+1)-ez(i))
     enddo
     !$omp end parallel do
 
+    call exchg1d(ey,istart,iend,comm,left,right)
     !$omp parallel do
-    do i=0,nx-1
-        hz(i) = amz(i)*hz(i)&
-        &       -bmzx(i)*(ey(i+1)-ey(i))&
-        &       +bmzy(i)*(ex(i)-ex(i))
+    do i=istart,iend
+        hz(i) = amz(i)*hz(i)-bmzx(i)*(ey(i+1)-ey(i))
     enddo
     !$omp end parallel do
 
