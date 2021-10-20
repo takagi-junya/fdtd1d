@@ -27,7 +27,9 @@ module pml2d !共通変数
          write(30,*)"init_pml"
          write(30,*)"pmlx:",lpml(1)
          call init_pml(pml_l,0,lpml(1))                  !左側のPML
-      elseif(myrank.eq.nprocs-1) then
+      endif
+      if(myrank.eq.nprocs-1) then
+         write(30,*)"pmlx2:",lpml(1)
          call init_pml(pml_r,nx-lpml(1),nx)              !右側のPML
       endif
    end subroutine initpml
@@ -126,7 +128,8 @@ module pml2d !共通変数
       implicit none
       if(myrank.eq.0) then
          call e_pml(pml_l)                        !左側のPML
-      elseif(myrank.eq.nprocs-1) then
+      endif
+      if(myrank.eq.nprocs-1) then
          call e_pml(pml_r)                        !右側のPML
       endif
    end subroutine epml
@@ -169,7 +172,8 @@ module pml2d !共通変数
       implicit none
       if(myrank.eq.0) then
          call h_pml(pml_l)                      !左側のPML
-      elseif(myrank.eq.nprocs-1) then
+      endif
+      if(myrank.eq.nprocs-1) then
          call h_pml(pml_r)                      !右側のPML
       endif
    end subroutine hpml
