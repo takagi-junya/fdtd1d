@@ -166,6 +166,24 @@ subroutine setup()
         iple = ic+width 
     endif
 
+    ajj = dt/eps0 
+
+    imat(1,1) = 1
+    imat(2,2) = 1
+    imat(3,3) = 1
+
+    omat(1,1) = nu
+    omat(1,2) = wc(3)
+    omat(1,3) =-wc(2)
+
+    omat(2,1) =-wc(3)
+    omat(2,2) = nu 
+    omat(2,3) = wc(1)
+
+    omat(3,1) = wc(2)
+    omat(3,2) =-wc(1)
+    omat(3,3) = nu 
+
     if(pls.eq.1) then
         call ADE()
     elseif(pls.eq.2) then
@@ -182,6 +200,13 @@ subroutine setup()
         write(30,*)"frequency:",freq 
         write(30,*)"T:",1/freq
         write(30,*)"dt:",dt,"dx:",dx
+        if(pls.eq.1) then
+            write(30,*)"ADE"
+        elseif(pls.eq.2) then
+            write(30,*)"JEC"
+        elseif(pls.eq.3) then
+            write(30,*)"EOM"
+        endif
     endif
     
     if(myrank.eq.nprocs-1) then 

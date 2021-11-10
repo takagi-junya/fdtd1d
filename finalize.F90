@@ -15,17 +15,7 @@ subroutine finalize()
     deallocate(ajx,ajy,ajz)
     deallocate(ajex,ajey,ajez)
     deallocate(omat,sa,sb,tc,imat,sab)
-    close(30)
-    if(pls.eq.0) then
-        close(101)
-        close(102)
-        close(103)
-    else
-        close(101)
-        close(102)
-        close(103)
-        close(104)
-        close(105)
-        close(106)
+    if(myrank.eq.0) then
+        close(30)
     endif
 end subroutine

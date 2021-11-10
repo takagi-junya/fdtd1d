@@ -4,7 +4,7 @@
 #QSUB -q gr20001a
 #QSUB -rn
 #QSUB -W 1:00:00
-#QSUB -A p=1:t=4:c=4:m=1G
+#QSUB -A p=16:t=4:c=4:m=1G
 #QSUB -e stderr.err
 #QSUB -o stdout.out
 #============ Shell Script ============
