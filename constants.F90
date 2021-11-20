@@ -12,7 +12,7 @@ module constants
    !/space/
    integer :: nxx              !number of cells
    real(kind=8) :: dx          !grid length
-   integer :: abc,lpml(3)      !number of cells for absoption boundry
+   integer :: abc,lpml         !number of cells for absoption boundry
 
    !/time/
    real(kind=8) :: t
@@ -30,7 +30,7 @@ module constants
    integer :: ic
    
    !/wave/
-   integer :: mode
+   integer :: wshape
    real(kind=8) :: lambda,freq,omega      !wave length,frequency
    real(kind=8) :: amps(3)                !amplitude
    real(kind=8) :: orgs(3)                       

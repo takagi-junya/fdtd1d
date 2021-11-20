@@ -25,12 +25,12 @@ module pml2d !共通変数
       implicit none
       if(myrank.eq.0) then
          write(30,*)"init_pml"
-         write(30,*)"pmlx:",lpml(1)
-         write(30,*)"pmlx2:",lpml(1)
-         call init_pml(pml_l,0,lpml(1))                  !左側のPML
+         write(30,*)"pmlx:",lpml
+         write(30,*)"pmlx2:",lpml
+         call init_pml(pml_l,0,lpml)                  !左側のPML
       endif
       if(myrank.eq.nprocs-1) then
-         call init_pml(pml_r,nx-lpml(1),nx)              !右側のPML
+         call init_pml(pml_r,nx-lpml,nx)              !右側のPML
       endif
    end subroutine initpml
   !-----------------------------------------------------------------------
@@ -82,17 +82,17 @@ module pml2d !共通変数
       allocate(p%bmypml(i0:i1))
       allocate(p%bmxpml(i0:i1))
       !反射係数の要求精度〔dB〕から最大導電率を計算（真空）
-      smax0x=copml*rmax*(order+1)/(lpml(1)*dx)
+      smax0x=copml*rmax*(order+1)/(lpml*dx)
       !導電率分布，磁気伝導率分布
       mupml=mubk*mu0                                     !PMLの媒質定数
       epspml=epsbk*eps0
       do i=i0,i1        
-         if(i<lpml(1)) then                              !左側のPML
-            sigmxm=((lpml(1)-i-0.5d0)/lpml(1))**order*smax0x      
-            sigmxe=(float(lpml(1)-i)/lpml(1))**order*smax0x
-         else if(i>=nx-lpml(1)) then                     !右側のPML
-            sigmxm=((i-nx+lpml(1)+0.5d0)/lpml(1))**order*smax0x
-            sigmxe=(float(i-nx+lpml(1))/lpml(1))**order*smax0x
+         if(i<lpml) then                              !左側のPML
+            sigmxm=((lpml-i-0.5d0)/lpml)**order*smax0x      
+            sigmxe=(float(lpml-i)/lpml)**order*smax0x
+         else if(i>=nx-lpml) then                     !右側のPML
+            sigmxm=((i-nx+lpml+0.5d0)/lpml)**order*smax0x
+            sigmxe=(float(i-nx+lpml)/lpml)**order*smax0x
          else                                         
             sigmxm=0.0d0
             sigmxe=0.0d0

@@ -23,60 +23,57 @@ program fdtd1d
     call mpi_comm_rank(comm,myrank,mpierr)
     
     !$omp parallel
-      nthread = omp_get_num_threads()
+    nthread = omp_get_num_threads()
     !$omp end parallel
+
     call hdfinit()
     call setup()
     call output_init()
-    if(mode.eq.0.or.mode.eq.1) then
+
+    if((wshape.eq.0).or.(wshape.eq.1)) then
         call init_pwave()
-        call initpml()
-    else if(mode.eq.2) then
+    elseif(wshape.eq.2) then
         call RCP()
-        call initpml()
-    else if(mode.eq.3) then
+    elseif(wshape.eq.3) then
         call LCP()
-        call initpml()
     endif
+    call initpml()
+
     t=dt
-    if(mode.eq.0) then
-        write(30,*),"All total field mode"
-        do step=1,nstep+1
-            write(*,'(a10,I6.6)')"Time step:",step-1
-            call efield()
-            call epml()
-            t=t+0.5d0*dt
-            call hfield()
+
+    call mpi_barrier(comm,mpierr)
+    time0 = mpi_wtime()
+    do step=1,nstep+1
+        if(myrank.eq.0) then
+            write(*,'(a11,I7.4)')"Time step:",step
+        endif
+        call efield()
+        call epml()
+        t=t+0.5d0*dt
+        call hfield()
+        if(pls.eq.1) then
             call current()
-            call hpml()
-            t=t+0.5d0*dt
-            call out_emf(step-1)
-        enddo
-    elseif((mode.eq.1).or.(mode.eq.2).or.(mode.eq.3)) then
-        write(30,*),"All total field mode"
-        call mpi_barrier(comm,mpierr)
-        time0 = mpi_wtime()
-        do step=1,nstep+1
-            !write(*,'(a10,I6.6)')"Time step:",step-1
-            call efield()
-            call epml()
-            t=t+0.5d0*dt
-            call hfield()
-            call velocity
+        endif
+        if(pls.eq.2) then
+            call current()
+        endif
+        if(pls.eq.3) then
+            call velocity()
             call currentEOM()
-            call hpml()
-            t=t+0.5d0*dt
-            call out_emf(step-1)
-            !call mpi_barrier(comm,mpierr)
-        enddo
-        call mpi_barrier(comm,mpierr)
-        time1 = mpi_wtime()
-    endif
+        endif
+        call hpml()
+        t=t+0.5d0*dt
+        call out_emf(step-1)
+    enddo
+    call mpi_barrier(comm,mpierr)
+    time1 = mpi_wtime()
+
     if(myrank.eq.0) then
         open(50,file="memo.txt",position="append")
         write(50,*)"np:",nprocs,"nt:",nthread," time:",time1-time0
         close(50)
     endif
+
     call hdffinalize()
     call finalize()
     call output_fin()

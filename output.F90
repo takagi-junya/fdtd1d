@@ -12,8 +12,8 @@ module output
       use hdfio
       implicit none
 
-      is=lpml(1)
-      ie=nx-lpml(1)
+      is=lpml
+      ie=nx-lpml
       dims(1)=ie-is+1
 
       if(myrank.eq.0) then
@@ -111,7 +111,7 @@ module output
       if(mod(int(n-ostart),interval).eq.0) then  
          write(tag,'(I4.4)') h5count
          if(myrank.eq.0) then
-            write(*,'(/a8,I5.5/)')'h5 out:',n
+            write(*,'(/a8,I6.5/)')'h5 out:',n
          endif
          if(component(1).eq.1) then
             call wrt1p(group_id(1),plist_id(1),tag,dimsf1d,chunk_dims1d,myrank,ex(istart:iend))
@@ -140,7 +140,7 @@ module output
          if(component(9).eq.1) then
             call wrt1p(group_id(9),plist_id(9),tag,dimsf1d,chunk_dims1d,myrank,jz(istart:iend))
          endif
-	 h5count = h5count + 1
+	      h5count = h5count + 1
       endif 
    end subroutine
 

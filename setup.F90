@@ -9,10 +9,11 @@ subroutine setup()
     integer :: i,k
     real(kind=8) :: omg,ti,f
 
+    pt = 5.0d0
     namelist /space/nxx,dx,abc,lpml
     namelist /time/deltat,nstep
     namelist /output/interval,ostart,component,io
-    namelist /wave/mode,amps,lambda,orgs,pt,pw
+    namelist /wave/wshape,amps,lambda,orgs,pw
     namelist /plasma/pls,width,nu,wp,wc
         
     open(10,file="param.inp",action="read")
@@ -27,7 +28,7 @@ subroutine setup()
     if(abc==0) then
         nx = nxx
     else
-        nx = nxx+2*lpml(1)
+        nx = nxx+2*lpml
     endif
     ic = int(0.5*nx)
 
