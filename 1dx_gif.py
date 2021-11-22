@@ -6,15 +6,10 @@ import matplotlib.pyplot as plt
 from matplotlib import animation
 import h5py
 import os
-#import gc
-import directory_edit as de
 import sys
 import matplotlib.patches as patches
 import shutil
-import make_mp4
 import f90nml
-import tkinter
-from tkinter import ttk 
   
   
 def init():
@@ -51,14 +46,16 @@ def vis(comp,type,area,interval,xmin,xmax,ymin,ymax):
   fig,ax = plt.subplots()
   
   if(type=="gif"):
-    if not de.find("gif"):
-        de.make_dir("gif")
+    gpath = os.path.join(cwd,"gif")
+    if not os.path.exists(gpath):
+        os.makedirs("gif")
       
-  if(type=="png" or type=="mp4"):
+  if(type=="png"):
     name = "1dfig_"+comp
+    gpath = os.path.join(cwd,name)
     filename = "1dfig_"+comp
-    if not de.find(name):
-        de.make_dir(name)
+    if not os.path.exists(gpath):
+        os.makedirs(name)
       
   with h5py.File(comp+".h5",mode="r") as f:
     for i in f[comp].keys():
@@ -69,7 +66,7 @@ def vis(comp,type,area,interval,xmin,xmax,ymin,ymax):
         continue;
       print(keys[k])
       lines = []
-      if(type=="png" or type=="mp4"):
+      if(type=="png"):
         fig,ax = plt.subplots()
 
       #data = np.array(f[comp][str(keys[k])][py,:])
@@ -94,18 +91,13 @@ def vis(comp,type,area,interval,xmin,xmax,ymin,ymax):
       lines.extend(im)
       ims.append(lines)
       plt.grid()
-      if(type=="png" or type=="mp4"):
+      if(type=="png"):
         plt.savefig(filename+"/"+str(keys[k]).zfill(4)+".png")
         plt.close()
     if(type=="gif"):
       os.chdir("./gif/")
       ani = animation.ArtistAnimation(fig,ims,interval=250,blit=False)
       ani.save(comp+"1dx.gif",writer="imagemagick")
-    if(type=="mp4"):
-      print(filename)
-      os.chdir(cwd)
-      os.chdir(filename)
-      make_mp4.mp4(comp+"_"+area)
 
 args = sys.argv[1:]
 comp = "ey"
