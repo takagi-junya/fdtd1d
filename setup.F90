@@ -29,6 +29,7 @@ subroutine setup()
         nx = nxx
     else
         nx = nxx+2*lpml
+        nx = nxx
     endif
     ic = int(0.5*nx)
 
@@ -81,7 +82,7 @@ subroutine setup()
     jy = 0.0d0
     jz = 0.0d0
 
-    pc = orgs(1)*dx
+    pc = orgs*dx
     pw = pw*dx
 
     !背景媒質

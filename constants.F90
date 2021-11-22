@@ -33,7 +33,7 @@ module constants
    integer :: wshape
    real(kind=8) :: lambda,freq,omega      !wave length,frequency
    real(kind=8) :: amps(3)                !amplitude
-   real(kind=8) :: orgs(3)                       
+   real(kind=8) :: orgs                      
    real(kind=8) :: pc,pt,pw,k0
    real(kind=8) :: alpha
 

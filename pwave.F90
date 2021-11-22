@@ -69,7 +69,7 @@ contains
         real :: xx,a
         xx = x-c*t-pc
         a = xx/pw
-        gs_ez2 = -2.0d0*a*pw*exp(-a*a)
+        gs_ez2 = sqrt(2.0d0/pw/pw)*exp(0.50d0)*xx*exp(-a*a)
     end function gs_ez2
 
 end module pwave
